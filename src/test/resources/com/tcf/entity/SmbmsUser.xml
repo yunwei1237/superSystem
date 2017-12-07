@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE mapper  
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+<mapper namespace="com.tcf.dao.SmbmsUserDao22"> 
+   <cache eviction="FIFO" flushInterval="60000" size="512" readOnly="true" /> 
+   <!--  <select id="getAllSmbmsUsers" resultType="com.tcf.entity.SmbmsUser">  
+        select * from smbms_user
+    </select> -->
+    <!-- <select id="getAllSmbmsUsers" resultMap="smbmsUser">  
+        select * from smbms_user u inner join smbms_role r on u.userRole = r.id
+    </select> -->
+    <select id="getAllSmbmsUsers" resultMap="smbmsUser">  
+        select * from smbms_user u inner join smbms_address a on u.id = a.id
+    </select>
+    <select id="getAllSmbmsUsers2" resultMap="smbmsUser">  
+        select * from smbms_user u inner join smbms_address a on u.id = a.id limit #{from},#{to}
+    </select>
+    
+    <!-- select * from smbms_user WHERE id = ? and userCode like concat('%',?,'%')  -->
+    <select id="getAllSmbmsUsersByBean" resultType="com.tcf.entity.SmbmsUser" parameterType="com.tcf.entity.SmbmsUser">  
+        select * from smbms_user
+        <!-- <where>
+        	<if test="id != null">
+    			and id = #{id}
+	    	</if>
+	    	<if test="userCode != null">
+	    		and userCode like  concat('%',#{userCode},'%')
+	    	</if>
+        </where> -->
+    	<trim prefix="where" prefixOverrides="and | or" >
+    		<if test="id != null">
+    			and id = #{id}
+	    	</if>
+	    	<if test="userCode != null">
+	    		and userCode like  concat('%',#{userCode},'%')
+	    	</if>
+    	</trim>
+    </select>
+    
+    <select id="getAllSmbmsUsersByBean2" resultType="com.tcf.entity.SmbmsUser" parameterType="com.tcf.entity.SmbmsUser">  
+        select * from smbms_user
+        <!-- <where>
+        	<choose>
+	    		<when test="userName != null and userName != '' ">
+	    			and userName like  concat('%',#{userName},'%')
+	    		</when>
+	    		<when test="userCode != null and userCode != '' ">
+	    			and userCode like  concat('%',#{userCode},'%')
+	    		</when>
+	    		<when test="userRole != null and userRole != '' ">
+	    			and userRole like  concat('%',#{userRole},'%')
+	    		</when>
+	    		<otherwise>
+	    			and year(creationDate) like  year(#{creationDate})
+	    		</otherwise>
+	    	</choose>
+        </where> -->
+        <trim prefix="where" prefixOverrides="and | or">
+        	<choose>
+	    		<when test="userName != null and userName != '' ">
+	    			and userName like  concat('%',#{userName},'%')
+	    		</when>
+	    		<when test="userCode != null and userCode != '' ">
+	    			and userCode like  concat('%',#{userCode},'%')
+	    		</when>
+	    		<when test="userRole != null and userRole != '' ">
+	    			and userRole like  concat('%',#{userRole},'%')
+	    		</when>
+	    		<otherwise>
+	    			and year(creationDate) like  year(#{creationDate})
+	    		</otherwise>
+	    	</choose>
+        </trim>
+    </select>
+    
+    <select id="login" resultType="com.tcf.entity.SmbmsUser" parameterType="long">  
+        select * from smbms_user where id = #{id} and userPassword = #{pwd}
+    </select>
+    
+    <select id="getSmbmsUserById" resultType="com.tcf.entity.SmbmsUser" parameterType="long">  
+        select * from smbms_user where id = #{id}
+    </select>
+    <select id="getAllSmbmsUsersByRoles" resultType="com.tcf.entity.SmbmsUser">  
+        select * from smbms_user where userRole in 
+        <foreach collection="array" item="role" open="(" separator="," close=")">
+        	#{role}
+        </foreach>
+    </select>
+    <select id="getAllSmbmsUsersByRoles2" resultType="com.tcf.entity.SmbmsUser">  
+        select * from smbms_user where userRole in 
+        <foreach collection="list" item="role" open="(" separator="," close=")">
+        	#{role}
+        </foreach>
+    </select>
+    <select id="getAllSmbmsUsersByRoles3" resultType="com.tcf.entity.SmbmsUser">  
+        select * from smbms_user where userRole in 
+        <foreach collection="roles" item="role" open="(" separator="," close=")">
+        	#{role}
+        </foreach>
+    </select>
+    <update id="changePwd">
+    	update smbms_user set userPassword = #{newPwd} where id = #{id} and userPassword = #{pwd}
+    </update>
+    <!--     		#{id}, -->
+    <insert id="addSmbmsUser" parameterType="com.tcf.entity.SmbmsUser">
+    	insert into 
+    		smbms_user(
+    			userCode,userName,userPassword,gender,birthday,
+	    		phone,address,userRole,createdBy,creationDate,
+	    		modifyBy,modifyDate
+	    	) 
+    		values(
+	    		#{userCode},#{userName},#{userPassword},#{gender},#{birthday},
+	    		#{phone},#{address},#{userRole},#{createdBy},#{creationDate},
+	    		#{modifyBy},#{modifyDate}
+	    	)
+    </insert>
+    
+    <update id="updateSmbmsUser" parameterType="com.tcf.entity.SmbmsUser">
+    	update smbms_user 
+    		<!-- <set>
+    			<if test="userCode != null">userCode = #{userCode},</if>
+	    		<if test="userName != null">userName = #{userName},</if>
+	    		<if test="userPassword != null">userPassword = #{userPassword},</if>
+	    		<if test="birthday != null">birthday = #{birthday},</if>
+	    		<if test="gender != null">gender = #{gender},</if>
+	    		<if test="phone != null">phone = #{phone},</if>
+	    		<if test="address != null">address = #{address},</if>
+	    		<if test="userRole != null">userRole = #{userRole},</if>
+	    		<if test="createdBy != null">createdBy = #{createdBy},</if>
+	    		<if test="creationDate != null">creationDate = #{creationDate},</if>
+	    		<if test="modifyBy != null">modifyBy = #{modifyBy},</if>
+	    		<if test="modifyDate != null">modifyDate = #{modifyDate},</if>
+	    	</set> -->
+	    	<trim prefix="set"  suffixOverrides="," >
+	    		<if test="userCode != null">userCode = #{userCode},</if>
+	    		<if test="userName != null">userName = #{userName},</if>
+	    		<if test="userPassword != null">userPassword = #{userPassword},</if>
+	    		<if test="birthday != null">birthday = #{birthday},</if>
+	    		<if test="gender != null">gender = #{gender},</if>
+	    		<if test="phone != null">phone = #{phone},</if>
+	    		<if test="address != null">address = #{address},</if>
+	    		<if test="userRole != null">userRole = #{userRole},</if>
+	    		<if test="createdBy != null">createdBy = #{createdBy},</if>
+	    		<if test="creationDate != null">creationDate = #{creationDate},</if>
+	    		<if test="modifyBy != null">modifyBy = #{modifyBy},</if>
+	    		<if test="modifyDate != null">modifyDate = #{modifyDate},</if>
+	    	</trim>
+    	where id = #{id}
+    </update>
+   <!--  <resultMap type="com.tcf.entity.SmbmsUser" id="smbmsUser">
+    	<id column="id" property="id" />
+    	<association property="role" javaType="com.tcf.entity.SmbmsRole" >
+    		<id column="id" property="id" />
+    	</association>
+    </resultMap> -->
+     <resultMap type="com.tcf.entity.SmbmsUser" id="smbmsUser">
+    	<id column="id" property="id" />
+    	<collection property="addresses" ofType="com.tcf.entity.SmbmsAddress">
+    		<id column="id" property="id" />
+    	</collection>
+    </resultMap>
+</mapper>
